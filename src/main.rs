@@ -6,6 +6,14 @@ pub mod objects;
 
 use crate::objects::Drawable;
 
+#[derive(PartialEq)]
+pub enum Direction {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+}
+
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = WindowConfig::new()
@@ -22,6 +30,19 @@ fn main() -> Result<(), String> {
 
 fn update(app: &mut App, state: &mut State) {
     *state.main_view.window_size() = (app.window().width(), app.window().height());
+
+    if app.keyboard.is_down(KeyCode::W) {
+        state.tmp_player.move_pos(app.timer.delta_f32(), Direction::UP)
+    }
+    if app.keyboard.is_down(KeyCode::A) {
+        state.tmp_player.move_pos(app.timer.delta_f32(), Direction::LEFT)
+    }
+    if app.keyboard.is_down(KeyCode::S) {
+        state.tmp_player.move_pos(app.timer.delta_f32(), Direction::DOWN)
+    }
+    if app.keyboard.is_down(KeyCode::D) {
+        state.tmp_player.move_pos(app.timer.delta_f32(), Direction::RIGHT)
+    }
 }
 
 fn draw(gfx: &mut Graphics, state: &mut State /*window_size: (i32, i32)*/) {
@@ -29,7 +50,8 @@ fn draw(gfx: &mut Graphics, state: &mut State /*window_size: (i32, i32)*/) {
 
     state.main_view.set(&mut draw);
 
-    state.tmp.draw(&mut draw, (0.0, 0.0));
+    state.tmp_wall.draw(&mut draw, (0.0, 0.0));
+    state.tmp_player.draw(&mut draw, (0.0, 0.0));
 
     draw.clear(Color::BLACK);
     gfx.render(&draw);
@@ -38,7 +60,9 @@ fn draw(gfx: &mut Graphics, state: &mut State /*window_size: (i32, i32)*/) {
 #[derive(AppState)]
 struct State {
     main_view: viewport::Viewport,
-    tmp: objects::Wall,
+
+    tmp_wall: objects::Wall,
+    tmp_player: objects::Player,
 }
 
 impl State {
@@ -46,7 +70,9 @@ impl State {
     fn new() -> Self {
         Self {
             main_view: viewport::Viewport::new(),
-            tmp: objects::Wall::new(),
+
+            tmp_wall: objects::Wall::new(),
+            tmp_player: objects::Player::new(),
         }
     }
 }
